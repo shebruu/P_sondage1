@@ -104,7 +104,7 @@ class Database {
 	 */
 	public function addUser($nickname, $password) {
 		/* TODO  */
-		return true;
+		return 'Username already taken';
 	}
 
 	/**
