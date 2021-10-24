@@ -18,8 +18,8 @@ function getAction() {
 	else $action = $_REQUEST['action'];
 	$actions = array('Default',
 			/*'SignUpForm',
-			'SignUp',
-			'Logout',*/
+			'SignUp',*/
+			'Logout',
 			'Login',/*
 			'UpdateUserForm',
 			'UpdateUser',
