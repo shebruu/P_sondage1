@@ -104,7 +104,33 @@ class Database {
 	 */
 	public function addUser($nickname, $password) {
 		/* TODO  */
-		return 'Username already taken';
+	    if(!preg_match('~^[a-zA-Z]{3,10}$~', $nickname)){
+	        return "Le pseudo doit contenir entre 3 et 10 lettres.";
+	    }
+	    if (strlen($password)>10 || strlen($password)<3){
+	        return "Le mot de passe doit contenir entre 3 et 10 caractères.";
+	    }
+	    //
+	    $query =  "SELECT count(*) FROM users WHERE nickname = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
+	    $stmt->execute();
+	    //$stmt->bindColumn(1, $nom);	// $stmt->bindColumn('name', $nom);
+	    $userExists = $stmt->fetch(PDO::FETCH_ASSOC)['count(*)'];		// $tabRows = $stmt->fetchAll();
+	    $stmt->closeCursor();
+	    
+	    if ($userExists) return 'Username already taken';
+	    
+	    //add to database
+	    $password = password_hash($password, PASSWORD_BCRYPT);
+	    
+	    $query =  "insert into users (nickname, password) values ( ? , ?)";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
+	    $stmt->bindParam(2, $password, PDO::PARAM_STR, 13);
+	    $stmt->execute();
+	    return $stmt->rowCount() ? true :  'Erreur dans la base de donnée';
+	    
 	}
 
 	/**
