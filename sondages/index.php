@@ -16,8 +16,7 @@ function getViewByName($name) {
 function getAction() {
 	if (!isset($_REQUEST['action'])) $action = 'Default';
 	else $action = $_REQUEST['action'];
-
-	$actions = array('Default',
+	$actions = array('Default','Login'
 			/*'SignUpForm',
 			'SignUp',
 			'Logout',
@@ -30,7 +29,9 @@ function getAction() {
 			'Search',
 			'Vote'*/);
 
-	if (!in_array($action, $actions)) $action = 'Default';
+	if (!in_array($action, $actions)){
+	    $action = 'Default';
+	}
 	return getActionByName($action);
 }
 
