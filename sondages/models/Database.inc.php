@@ -84,14 +84,11 @@ class Database {
 	public function checkPassword($nickname, $password) {
 	    $nickname = $this->connection->quote($nickname);
 		$query = "SELECT password FROM users WHERE nickname=$nickname";
-		$result = $this->connection->query($query);
-		$db_password = $result->fetch(PDO::FETCH_ASSOC)['password'];
+		$stmt = $this->connection->query($query);
 		
-		//var_dump(password_hash('epfc', PASSWORD_BCRYPT));
-		//$2y$10$E82VQvo2cIqRIXvJ69.vrOEnmpaF5wVY7YdtGSQWRp45gWHMeW9pe
-		//todo
-		//update users set password = '$2y$10$E82VQvo2cIqRIXvJ69.vrOEnmpaF5wVY7YdtGSQWRp45gWHMeW9pe' where nickname=''		
-		return password_verify($password, $db_password);
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+		
+		return !empty($result) && password_verify($password, $result['password']);
 	}
 
 	/**

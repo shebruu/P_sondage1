@@ -1,6 +1,6 @@
 <?php
-session_start();
 
+session_start();
 function getActionByName($name) {
 	$name .= 'Action';
 	require("actions/$name.inc.php");
@@ -16,11 +16,11 @@ function getViewByName($name) {
 function getAction() {
 	if (!isset($_REQUEST['action'])) $action = 'Default';
 	else $action = $_REQUEST['action'];
-	$actions = array('Default','Login'
+	$actions = array('Default',
 			/*'SignUpForm',
 			'SignUp',
-			'Logout',
-			'Login',
+			'Logout',*/
+			'Login',/*
 			'UpdateUserForm',
 			'UpdateUser',
 			'AddSurveyForm',
