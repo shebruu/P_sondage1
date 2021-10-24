@@ -1,4 +1,4 @@
-<?
+<?php
  if ($model->getMessage()!=="") {
 	echo '<div class="message">'.$model->getMessage().'</div>';
 }
