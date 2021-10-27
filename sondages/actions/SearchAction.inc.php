@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/SurveysModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -27,13 +27,14 @@ class SearchAction extends Action {
 	    }
 	    
 	    //récupérer les sondages dont la question contient le mot clé
-	    $surveys = $this->database->loadSurveysByKeyword();
+	    $surveys = $this->database->loadSurveysByKeyword($keyword);
+	    // TODO traiter le cas où survey == false ?
 	    
 	    $model = new SurveysModel();
 	    $model->setSurveys($surveys);
 	    
 	    $this->setModel($model);
-	    $this->setView(getViewByName('SurveysView'));
+	    $this->setView(getViewByName('Surveys'));
 	}
 
 }

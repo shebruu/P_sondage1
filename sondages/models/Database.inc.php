@@ -188,7 +188,14 @@ class Database {
 	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
 	 */
 	public function loadSurveysByKeyword($keyword) {
-		/* TODO  */
+	    
+	    $keyword = $this->connection->quote(strtolower($keyword));
+		$query =  "SELECT * FROM surveys WHERE INSTR(lower(question), $keyword)>0 ";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
 	}
 
 
@@ -211,7 +218,26 @@ class Database {
 	 */
 	private function loadSurveys($arraySurveys) {
 		$surveys = array();
-		/* TODO  */
+		
+		if(!is_array($arraySurveys)) return false;
+		
+		foreach ($arraySurveys as $row){
+		    //create survey from data in row
+		    $survey = new Survey($row['owner'], $row['question']);
+		    $survey->setId($row['id']);
+		    //get responses for this survey and add them to survey
+		    $query =  "SELECT * FROM responses WHERE id_survey = ? ";
+		    $stmt = $this->connection->prepare($query);
+		    $stmt->bindParam(1, $row['id'], PDO::PARAM_INT);
+		    $stmt->execute();
+		    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		    $stmt->closeCursor();
+		    
+		    $this->loadResponses($survey, $rows);
+		    //add this survey to this list of surveys
+		    $surveys[] = $survey;
+		}
+		
 		return $surveys;
 	}
 
@@ -223,7 +249,17 @@ class Database {
 	 * @return array(Response)|boolean Le tableau de réponses ou false si une erreur s'est produite.
 	 */
 	private function loadResponses(&$survey, $arrayResponses) {
-		/* TODO  */
+	    if(!is_array($arrayResponses)) return false;
+	    
+	    foreach($arrayResponses as $row){
+	        //create response from data in row
+	        $response = new Response($survey, $row['title'], $row['count']);
+	        $response->setId($row['id']);
+	        //add response to this survey
+	        $responses[] = $response;
+	        $survey->addResponse($response);
+	    }
+	    return $responses;
 	}
 
 }
