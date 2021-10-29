@@ -23,8 +23,9 @@ class UpdateUserAction extends Action {
 	 */
 	public function run() {
 	    $model = new MessageModel();
+	    $model->setLogin($this->getSessionLogin());
 	    
-	    if(!empty($_POST['updatePassword']) || !empty($_POST['updatePassword2'])){
+	    if(empty($_POST['updatePassword']) || empty($_POST['updatePassword2'])){
 	        $model->setMessage('Veuillez compléter les deux champs.');
 	        $this->setModel($model);
 	        $this->setView(getViewByName('UpdateUserForm'));
