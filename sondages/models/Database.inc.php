@@ -144,7 +144,20 @@ class Database {
 	 * @return boolean|string True si le mot de passe a Ã©tÃ© modifiÃ©, un message d'erreur sinon.
 	 */
 	public function updateUser($nickname, $password) {
-		/* TODO  */
+		if (strlen($password)>10 || strlen($password)<3){
+	        return "Le mot de passe doit contenir entre 3 et 10 caractères.";
+	    }
+	    $password = password_hash($password, PASSWORD_BCRYPT);
+	    $query =  "UPDATE users set password = ? WHERE nickname = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $password, PDO::PARAM_STR);
+	    $stmt->bindParam(2, $nickname, PDO::PARAM_STR);
+	    
+	    $result = $stmt->execute();
+	    
+	    if (!$result || $stmt->rowCount() != 1 ){
+	        return "Erreur dans la base de données";
+	    }
 		return true;
 	}
 
