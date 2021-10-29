@@ -21,8 +21,8 @@ function getAction() {
 			'SignUp',
 			'Logout',
 			'Login',
-			'UpdateUserForm',/*
-			'UpdateUser',
+			'UpdateUserForm',
+			'UpdateUser',/*
 			'AddSurveyForm',
 			'AddSurvey',
 			'GetMySurveys',*/
