@@ -22,13 +22,18 @@ class SearchAction extends Action {
 	    if (empty($keyword)){
 	        $model = new MessageModel();
 	        $model->setMessage('Vous devez entrer un mot clé avant de lancer la recherche.');  
-	        $this->setView(getViewByName('Default'));
+	        $this->setView(getViewByName('Message'));
 	        return;
 	    }
 	    
 	    //récupérer les sondages dont la question contient le mot clé
 	    $surveys = $this->database->loadSurveysByKeyword($keyword);
-	    // TODO traiter le cas où survey == false ?
+	    if ($surveys ===false){
+	        $model = new MessageModel();
+	        $model->setMessage('Erreur dans la recherche');
+	        $this->setView(getViewByName('Message'));
+	        return;
+	    }
 	    
 	    $model = new SurveysModel();
 	    $model->setSurveys($surveys);

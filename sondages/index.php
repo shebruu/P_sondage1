@@ -20,9 +20,9 @@ function getAction() {
 			'SignUpForm',
 			'SignUp',
 			'Logout',
-			'Login',/*
+			'Login',
 			'UpdateUserForm',
-			'UpdateUser',
+			'UpdateUser',/*
 			'AddSurveyForm',
 			'AddSurvey',
 			'GetMySurveys',*/
