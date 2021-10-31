@@ -188,21 +188,15 @@ class Database {
 	    //récupération de l'id du nouveau sondage
 	    $survey->setId($this->connection->lastInsertId());
 	    
-	    //préparation de la requete d'insertion des réponses
-	    $surveyId = $survey->getId();
+	    //insertion des réponses
 	    foreach ($survey->getResponses() as $response){
-	        $values[] =  "($surveyId, ".$this->connection->quote($response).", 0)";
+	        if ( !$this->saveResponse($response) ){
+	            //erreur
+	            $this->connection->rollback();
+	            return false;	            
+	        }
 	    }
-	    $values = implode(', ', $values);
-	    $query =  "insert into responses (id_survey, title, count) values $values ";
-	    //insertion
-	    $stmt = $this->connection->query($query);
-	   
-	    if ($stmt->rowCount() != count($survey->getResponses()) ){
-	        //erreur
-	        $this->connection->rollback();
-	        return false;
-	    }
+	    
 	    $this->connection->commit();
 		return true;
 	}
@@ -214,8 +208,19 @@ class Database {
 	 * @return boolean True si la sauvegarde a Ã©tÃ© rÃ©alisÃ©e avec succÃ¨s, false sinon.
 	 */
 	private function saveResponse(&$response) {
-		/* TODO  */
-		return true;
+		//préparation de la requete d'insertion des réponses
+	    $surveyId = $response->getSurvey()->getId();
+	    $title = $this->connection->quote($response->getTitle());
+	    $query =  "insert into responses (id_survey, title, count) values ($surveyId, $title, 0) ";
+	    //insertion
+	    $stmt = $this->connection->query($query);
+	    
+	    if ($stmt !== false && $stmt->rowCount() == 1) {
+	       $response->setId($this->connection->lastInsertId());
+	       return true;
+	    } else {
+	       return false;
+	    }
 	}
 
 	/**
