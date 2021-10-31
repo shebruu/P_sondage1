@@ -42,7 +42,8 @@ class AddSurveyAction extends Action {
 	        $survey = new Survey( $this->getSessionLogin(), htmlentities($_POST['questionSurvey']));
 	        for ($i = 1; $i < 5; $i++){
 	            if (!empty($_POST["responseSurvey$i"])){
-	                $survey->addResponse( htmlentities($_POST["responseSurvey$i"]));
+	                $response = new Response($survey, htmlentities($_POST["responseSurvey$i"]));
+	                $survey->addResponse($response);
 	            }
 	        }
 	        if (count($survey->getResponses())<2){
