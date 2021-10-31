@@ -274,6 +274,21 @@ class Database {
 	    }
 	    return $responses;
 	}
+	
+	/**
+	 * Construit un tableau de $nb de surveys
+	 * 
+	 * @param int $nb Nombre de surveys voulus
+	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
+	 */
+	public function getRandomSurveys($nb){
+	    $query =  "SELECT * FROM surveys ORDER BY RANDOM() LIMIT $nb ";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
+	}
 
 }
 

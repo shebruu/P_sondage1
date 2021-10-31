@@ -28,6 +28,7 @@
 
 	<div class="searchForm">
 		<?php $this->displaySearchForm($model); ?>
+		<p><a href="index.php?action=RandomSurveys">Afficher 3 sondages au hasard</a></p>
 	</div>
 
 	<div class="content">

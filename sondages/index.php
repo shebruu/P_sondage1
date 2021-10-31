@@ -27,6 +27,7 @@ function getAction() {
 			'AddSurvey',
 			'GetMySurveys',*/
 			'Search',
+	        'RandomSurveys',
 			/*'Vote'*/);
 
 	if (!in_array($action, $actions)){
