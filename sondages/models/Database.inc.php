@@ -47,7 +47,9 @@ class Database {
 	 * @return boolean True si le pseudonyme est valide, false sinon.
 	 */
 	private function checkNicknameValidity($nickname) {
-		/* TODO  */
+		if(!preg_match('~^[a-zA-Z]{3,10}$~', $nickname)){
+	        return false;
+	    }
 		return true;
 	}
 
@@ -59,7 +61,9 @@ class Database {
 	 * @return boolean True si le mot de passe est valide, false sinon.
 	 */
 	private function checkPasswordValidity($password) {
-		/* TODO  */
+		if (strlen($password)>10 || strlen($password)<3){
+	        return false;
+	    }
 		return true;
 	}
 
@@ -70,8 +74,13 @@ class Database {
 	 * @return boolean True si le pseudonyme est disponible, false sinon.
 	 */
 	private function checkNicknameAvailability($nickname) {
-		/* TODO  */
-		return false;
+		$query =  "SELECT count(*) FROM users WHERE nickname = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
+	    $stmt->execute();
+	    $userExists = $stmt->fetch(PDO::FETCH_ASSOC)['count(*)'];		
+	    $stmt->closeCursor();
+	    return  !$userExists;
 	}
 
 	/**
@@ -103,23 +112,15 @@ class Database {
 	 * @return boolean|string True si le couple a été ajouté avec succès, un message d'erreur sinon.
 	 */
 	public function addUser($nickname, $password) {
-		/* TODO  */
-	    if(!preg_match('~^[a-zA-Z]{3,10}$~', $nickname)){
+	    if(!$this->checkNicknameValidity($nickname)){
 	        return "Le pseudo doit contenir entre 3 et 10 lettres.";
 	    }
-	    if (strlen($password)>10 || strlen($password)<3){
+	    if (!$this->checkPasswordValidity($password)){
 	        return "Le mot de passe doit contenir entre 3 et 10 caract�res.";
 	    }
-	    //
-	    $query =  "SELECT count(*) FROM users WHERE nickname = ? ";
-	    $stmt = $this->connection->prepare($query);
-	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
-	    $stmt->execute();
-	    //$stmt->bindColumn(1, $nom);	// $stmt->bindColumn('name', $nom);
-	    $userExists = $stmt->fetch(PDO::FETCH_ASSOC)['count(*)'];		// $tabRows = $stmt->fetchAll();
-	    $stmt->closeCursor();
-	    
-	    if ($userExists) return 'Username already taken';
+	    if ($this->checkNicknameAvailability($nickname)){
+	        return 'Username already taken';
+	    }
 	    
 	    //add to database
 	    $password = password_hash($password, PASSWORD_BCRYPT);
@@ -144,7 +145,7 @@ class Database {
 	 * @return boolean|string True si le mot de passe a été modifié, un message d'erreur sinon.
 	 */
 	public function updateUser($nickname, $password) {
-		if (strlen($password)>10 || strlen($password)<3){
+	    if (!$this->checkPasswordValidity($password)){
 	        return "Le mot de passe doit contenir entre 3 et 10 caract�res.";
 	    }
 	    $password = password_hash($password, PASSWORD_BCRYPT);
