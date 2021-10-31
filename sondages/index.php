@@ -24,8 +24,8 @@ function getAction() {
 			'UpdateUserForm',
 			'UpdateUser',/*
 			'AddSurveyForm',
-			'AddSurvey',
-			'GetMySurveys',*/
+			'AddSurvey',*/
+			'GetMySurveys',
 			'Search',
 	        'RandomSurveys',
 			/*'Vote'*/);

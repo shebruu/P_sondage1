@@ -191,7 +191,13 @@ class Database {
 	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
 	 */
 	public function loadSurveysByOwner($owner) {
-		/* TODO  */
+	    $owner = $this->connection->quote(strtolower($owner));
+		$query =  "SELECT * FROM surveys where OWNER = $owner";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
 	}
 
 	/**
