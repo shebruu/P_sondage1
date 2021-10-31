@@ -169,7 +169,41 @@ class Database {
 	 * @return boolean True si la sauvegarde a Ã©tÃ© rÃ©alisÃ©e avec succÃ¨s, false sinon.
 	 */
 	public function saveSurvey(&$survey) {
-		/* TODO  */
+	    $this->connection->beginTransaction();
+	    //ajout de la question
+	    $query =  "insert into surveys (owner, question) values ( ? ,  ? ) ";
+	    $stmt = $this->connection->prepare($query);
+	    $owner = $survey->getOwner();
+	    $question = $survey->getQuestion();
+	    $stmt->bindParam(1, $owner, PDO::PARAM_STR);
+	    $stmt->bindParam(2, $question, PDO::PARAM_STR);
+	    
+	    $result = $stmt->execute();
+	    
+	    if (!$result || $stmt->rowCount() != 1 ){
+	        //erreur
+	        $this->connection->rollback();
+	        return false;
+	    }
+	    //récupération de l'id du nouveau sondage
+	    $survey->setId($this->connection->lastInsertId());
+	    
+	    //préparation de la requete d'insertion des réponses
+	    $surveyId = $survey->getId();
+	    foreach ($survey->getResponses() as $response){
+	        $values[] =  "($surveyId, ".$this->connection->quote($response).", 0)";
+	    }
+	    $values = implode(', ', $values);
+	    $query =  "insert into responses (id_survey, title, count) values $values ";
+	    //insertion
+	    $stmt = $this->connection->query($query);
+	   
+	    if ($stmt->rowCount() != count($survey->getResponses()) ){
+	        //erreur
+	        $this->connection->rollback();
+	        return false;
+	    }
+	    $this->connection->commit();
 		return true;
 	}
 
