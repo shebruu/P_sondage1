@@ -2,12 +2,12 @@
 
 function generateInputForResponse($n) {
 	?>
-<label for="responseSurvey<?php echo $n; ?>"> RÃ©ponse <?php echo $n; ?> :
+<label for="responseSurvey<?= $n; ?>"> Réponse <?= $n; ?> :
 </label>
 <input
-	name="responseSurvey<?php echo $n; ?>" class="field" type="text" />
+	name="responseSurvey<?= $n; ?>" class="field" type="text" />
 <br>
-<?
+<?php
 }
 
 if ($model->getMessage()!=="") {
