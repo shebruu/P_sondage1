@@ -318,6 +318,7 @@ class Database {
 	        $responses[] = $response;
 	        $survey->addResponse($response);
 	    }
+	    $survey->computePercentages();
 	    return $responses;
 	}
 	
