@@ -37,7 +37,7 @@ class SearchAction extends Action {
 	    
 	    $model = new SurveysModel();
 	    $model->setSurveys($surveys);
-	    
+	    $model->setLogin($this->getSessionLogin());
 	    $this->setModel($model);
 	    $this->setView(getViewByName('Surveys'));
 	}
