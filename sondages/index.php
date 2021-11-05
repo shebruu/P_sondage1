@@ -28,7 +28,7 @@ function getAction() {
 			'GetMySurveys',
 			'Search',
 	        'RandomSurveys',
-			/*'Vote'*/);
+			'Vote');
 
 	if (!in_array($action, $actions)){
 	    $action = 'Default';

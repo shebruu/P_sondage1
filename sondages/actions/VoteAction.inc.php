@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/SurveysModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -30,7 +30,7 @@ class VoteAction extends Action {
 			return;
 		}
 		
-		$this->setMessageView("Votre vote a Ã©tÃ© enregistrÃ©.");
+		$this->setMessageView("Votre vote a été enregistré.");
 	}
 
 }

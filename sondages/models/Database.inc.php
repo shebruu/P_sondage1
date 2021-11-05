@@ -265,7 +265,12 @@ class Database {
 	 * @return boolean True si le vote a été enregistré, false sinon.
 	 */
 	public function vote($id) {
-		/* TODO  */
+	    $query =  "UPDATE responses set count = count + 1 WHERE id = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $id, PDO::PARAM_INT);
+	    
+	    $result = $stmt->execute();
+	    return ($result && $stmt->rowCount() == 1 );
 	}
 
 	/**
