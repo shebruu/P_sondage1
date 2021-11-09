@@ -22,37 +22,28 @@ class UpdateUserAction extends Action {
 	 * @see Action::run()
 	 */
 	public function run() {
-	    $model = new MessageModel();
-	    $model->setLogin($this->getSessionLogin());
-	    
 	    if(empty($_POST['updatePassword']) || empty($_POST['updatePassword2'])){
-	        $model->setMessage('Veuillez compléter les deux champs.');
-	        $this->setModel($model);
-	        $this->setView(getViewByName('UpdateUserForm'));
+	        $this->createUpdateUserFormView('Veuillez compléter les deux champs.');
 	        return;
 	    }
 	        
 	    $pwd = $_POST['updatePassword'];
 	    $pwd_conf = $_POST['updatePassword2'];
-	    
 	    //mot de passe et comfirmation différents
 	    if($pwd != $pwd_conf){
-	        $model->setMessage('Les mots de passe entrés sont différents');
-	        $this->setModel($model);
-	        $this->setView(getViewByName('UpdateUserForm'));
+	        $this->createUpdateUserFormView('Les mots de passe entrés sont différents');
 	        return;
 	    }
 	    
 	    //sauver dans la base de données
 	    $response = $this->database->updateUser($this->getSessionLogin(), $pwd);
 	    if ( $response === true){
-	        $model->setMessage('Modification enregistrée');
-	        $this->setModel($model);
-	        $this->setView(getViewByName('Default'));
+	        $this->setModel(new MessageModel());
+	        $this->getModel()->setMessage('Modification enregistrée');
+	        $this->getModel()->setLogin($this->getSessionLogin());
+	        $this->setView(getViewByName('Message'));
 	    } else {
-	        $model->setMessage($response);
-	        $this->setModel($model);
-	        $this->setView(getViewByName('UpdateUserForm'));
+	        $this->createUpdateUserFormView($response);
 	    }
 	}
 
