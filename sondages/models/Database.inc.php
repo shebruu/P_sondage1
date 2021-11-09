@@ -118,7 +118,7 @@ class Database {
 	    if (!$this->checkPasswordValidity($password)){
 	        return "Le mot de passe doit contenir entre 3 et 10 caractères.";
 	    }
-	    if ($this->checkNicknameAvailability($nickname)){
+	    if (!$this->checkNicknameAvailability($nickname)){
 	        return 'Username already taken';
 	    }
 	    
@@ -127,10 +127,10 @@ class Database {
 	    
 	    $query =  "insert into users (nickname, password) values ( ? , ?)";
 	    $stmt = $this->connection->prepare($query);
-	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
-	    $stmt->bindParam(2, $password, PDO::PARAM_STR, 13);
-	    $stmt->execute();
-	    return $stmt->rowCount() ? true :  'Erreur dans la base de donnée';
+	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 10);
+	    $stmt->bindParam(2, $password, PDO::PARAM_STR, 10);
+	    $result = $stmt->execute();
+	    return ($result && $stmt->rowCount()) ? true :  'Erreur dans la base de donnée';
 	    
 	}
 
