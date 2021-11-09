@@ -16,15 +16,16 @@ class RandomSurveysAction extends Action {
 	    $surveys = $this->database->getRandomSurveys(3);
 	    
 	    if($surveys === false ){
-	        $model = new MessageModel();
-	        $model->setMessage("Une erreur c'est produite");
+	        $this->setModel(new MessageModel());
+	        $this->getModel()->setMessage("Une erreur c'est produite");
+	        $this->getModel()->setLogin($this->getSessionLogin());
 	        $this->setView(getViewByName('Message'));
 	    } else {
-	        $model = new SurveysModel();
-	        $model->setSurveys($surveys);
+	        $this->setModel(new SurveysModel());
+	        $this->getModel()->setLogin($this->getSessionLogin());
+	        $this->getModel()->setSurveys($surveys);
 	        $this->setView(getViewByName('RandomThree'));
 	    }
-	    $this->setModel($model);
 	}
 
 }

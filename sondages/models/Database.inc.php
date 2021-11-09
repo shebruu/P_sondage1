@@ -342,6 +342,9 @@ class Database {
 	public function getRandomSurveys($nb){
 	    $query =  "SELECT * FROM surveys ORDER BY RANDOM() LIMIT $nb ";
 	    $stmt = $this->connection->query($query);
+	    if ($stmt === false ){
+	        return false;
+	    }
 	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 	    
