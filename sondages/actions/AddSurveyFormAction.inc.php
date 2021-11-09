@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/MessageModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -27,7 +27,7 @@ class AddSurveyFormAction extends Action {
 	public function run() {
 		
 		if ($this->getSessionLogin()===null) {
-			$this->setMessageView("Vous devez Ãªtre authentifiÃ©.");
+			$this->setMessageView("Vous devez être authentifié.");
 			return;
 		}
 		

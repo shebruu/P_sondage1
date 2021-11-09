@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/MessageModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -22,7 +22,38 @@ class UpdateUserAction extends Action {
 	 * @see Action::run()
 	 */
 	public function run() {
-		/* TODO  */
+	    $model = new MessageModel();
+	    $model->setLogin($this->getSessionLogin());
+	    
+	    if(empty($_POST['updatePassword']) || empty($_POST['updatePassword2'])){
+	        $model->setMessage('Veuillez compléter les deux champs.');
+	        $this->setModel($model);
+	        $this->setView(getViewByName('UpdateUserForm'));
+	        return;
+	    }
+	        
+	    $pwd = $_POST['updatePassword'];
+	    $pwd_conf = $_POST['updatePassword2'];
+	    
+	    //mot de passe et comfirmation différents
+	    if($pwd != $pwd_conf){
+	        $model->setMessage('Les mots de passe entrés sont différents');
+	        $this->setModel($model);
+	        $this->setView(getViewByName('UpdateUserForm'));
+	        return;
+	    }
+	    
+	    //sauver dans la base de données
+	    $response = $this->database->updateUser($this->getSessionLogin(), $pwd);
+	    if ( $response === true){
+	        $model->setMessage('Modification enregistrée');
+	        $this->setModel($model);
+	        $this->setView(getViewByName('Default'));
+	    } else {
+	        $model->setMessage($response);
+	        $this->setModel($model);
+	        $this->setView(getViewByName('UpdateUserForm'));
+	    }
 	}
 
 	private function createUpdateUserFormView($message) {

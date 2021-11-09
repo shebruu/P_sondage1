@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/MessageModel.inc.php");
 require_once("models/Survey.inc.php");
@@ -27,7 +27,39 @@ class AddSurveyAction extends Action {
 	 * @see Action::run()
 	 */
 	public function run() {
-		/* TODO  */
+	    
+	    if ($this->getSessionLogin()===null) {
+	        $this->setMessageView("Vous devez être authentifié.");
+	        return;
+	    }
+	   
+	    $this->setModel(new MessageModel());
+	    
+	    if (empty($_POST['questionSurvey'])){
+	        $this->getModel()->setMessage('La question est obligatoire');
+	        
+	    } else {
+	        $survey = new Survey( $this->getSessionLogin(), htmlentities($_POST['questionSurvey']));
+	        for ($i = 1; $i < 5; $i++){
+	            if (!empty($_POST["responseSurvey$i"])){
+	                $response = new Response($survey, htmlentities($_POST["responseSurvey$i"]));
+	                $survey->addResponse($response);
+	            }
+	        }
+	        if (count($survey->getResponses())<2){
+	            $this->getModel()->setMessage('Il faut saisir au moins 2 réponses.');
+	        } else {
+	            //ajout dans la base de données
+	            $response = $this->database->saveSurvey($survey);
+	            if ($response !== false) {
+	                $this->getModel()->setMessage("Merci, nous avons ajouté votre sondage.");
+	            } else {
+	                $this->getModel()->setMessage("Une erreur s'est produite");
+	            }
+	        }
+	    }
+		$this->getModel()->setLogin($this->getSessionLogin());
+		$this->setView(getViewByName("AddSurveyForm"));
 	}
 
 }

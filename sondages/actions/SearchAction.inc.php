@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/SurveysModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -17,7 +17,29 @@ class SearchAction extends Action {
 	 * @see Action::run()
 	 */
 	public function run() {
-		/* TODO  */
+	    $keyword = isset($_POST['keyword']) ? $_POST['keyword'] : '';
+	    
+	    if (empty($keyword)){
+	        $model = new MessageModel();
+	        $model->setMessage('Vous devez entrer un mot clé avant de lancer la recherche.');  
+	        $this->setView(getViewByName('Message'));
+	        return;
+	    }
+	    
+	    //récupérer les sondages dont la question contient le mot clé
+	    $surveys = $this->database->loadSurveysByKeyword($keyword);
+	    if ($surveys ===false){
+	        $model = new MessageModel();
+	        $model->setMessage('Erreur dans la recherche');
+	        $this->setView(getViewByName('Message'));
+	        return;
+	    }
+	    
+	    $model = new SurveysModel();
+	    $model->setSurveys($surveys);
+	    $model->setLogin($this->getSessionLogin());
+	    $this->setModel($model);
+	    $this->setView(getViewByName('Surveys'));
 	}
 
 }

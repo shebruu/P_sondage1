@@ -47,7 +47,9 @@ class Database {
 	 * @return boolean True si le pseudonyme est valide, false sinon.
 	 */
 	private function checkNicknameValidity($nickname) {
-		/* TODO  */
+		if(!preg_match('~^[a-zA-Z]{3,10}$~', $nickname)){
+	        return false;
+	    }
 		return true;
 	}
 
@@ -59,7 +61,9 @@ class Database {
 	 * @return boolean True si le mot de passe est valide, false sinon.
 	 */
 	private function checkPasswordValidity($password) {
-		/* TODO  */
+		if (strlen($password)>10 || strlen($password)<3){
+	        return false;
+	    }
 		return true;
 	}
 
@@ -70,8 +74,13 @@ class Database {
 	 * @return boolean True si le pseudonyme est disponible, false sinon.
 	 */
 	private function checkNicknameAvailability($nickname) {
-		/* TODO  */
-		return false;
+		$query =  "SELECT count(*) FROM users WHERE nickname = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
+	    $stmt->execute();
+	    $userExists = $stmt->fetch(PDO::FETCH_ASSOC)['count(*)'];		
+	    $stmt->closeCursor();
+	    return  !$userExists;
 	}
 
 	/**
@@ -103,23 +112,15 @@ class Database {
 	 * @return boolean|string True si le couple a été ajouté avec succès, un message d'erreur sinon.
 	 */
 	public function addUser($nickname, $password) {
-		/* TODO  */
-	    if(!preg_match('~^[a-zA-Z]{3,10}$~', $nickname)){
+	    if(!$this->checkNicknameValidity($nickname)){
 	        return "Le pseudo doit contenir entre 3 et 10 lettres.";
 	    }
-	    if (strlen($password)>10 || strlen($password)<3){
+	    if (!$this->checkPasswordValidity($password)){
 	        return "Le mot de passe doit contenir entre 3 et 10 caract�res.";
 	    }
-	    //
-	    $query =  "SELECT count(*) FROM users WHERE nickname = ? ";
-	    $stmt = $this->connection->prepare($query);
-	    $stmt->bindParam(1, $nickname, PDO::PARAM_STR, 13);
-	    $stmt->execute();
-	    //$stmt->bindColumn(1, $nom);	// $stmt->bindColumn('name', $nom);
-	    $userExists = $stmt->fetch(PDO::FETCH_ASSOC)['count(*)'];		// $tabRows = $stmt->fetchAll();
-	    $stmt->closeCursor();
-	    
-	    if ($userExists) return 'Username already taken';
+	    if ($this->checkNicknameAvailability($nickname)){
+	        return 'Username already taken';
+	    }
 	    
 	    //add to database
 	    $password = password_hash($password, PASSWORD_BCRYPT);
@@ -144,7 +145,20 @@ class Database {
 	 * @return boolean|string True si le mot de passe a été modifié, un message d'erreur sinon.
 	 */
 	public function updateUser($nickname, $password) {
-		/* TODO  */
+	    if (!$this->checkPasswordValidity($password)){
+	        return "Le mot de passe doit contenir entre 3 et 10 caract�res.";
+	    }
+	    $password = password_hash($password, PASSWORD_BCRYPT);
+	    $query =  "UPDATE users set password = ? WHERE nickname = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $password, PDO::PARAM_STR);
+	    $stmt->bindParam(2, $nickname, PDO::PARAM_STR);
+	    
+	    $result = $stmt->execute();
+	    
+	    if (!$result || $stmt->rowCount() != 1 ){
+	        return "Erreur dans la base de donn�es";
+	    }
 		return true;
 	}
 
@@ -156,7 +170,35 @@ class Database {
 	 * @return boolean True si la sauvegarde a été réalisée avec succès, false sinon.
 	 */
 	public function saveSurvey(&$survey) {
-		/* TODO  */
+	    $this->connection->beginTransaction();
+	    //ajout de la question
+	    $query =  "insert into surveys (owner, question) values ( ? ,  ? ) ";
+	    $stmt = $this->connection->prepare($query);
+	    $owner = $survey->getOwner();
+	    $question = $survey->getQuestion();
+	    $stmt->bindParam(1, $owner, PDO::PARAM_STR);
+	    $stmt->bindParam(2, $question, PDO::PARAM_STR);
+	    
+	    $result = $stmt->execute();
+	    
+	    if (!$result || $stmt->rowCount() != 1 ){
+	        //erreur
+	        $this->connection->rollback();
+	        return false;
+	    }
+	    //r�cup�ration de l'id du nouveau sondage
+	    $survey->setId($this->connection->lastInsertId());
+	    
+	    //insertion des r�ponses
+	    foreach ($survey->getResponses() as $response){
+	        if ( !$this->saveResponse($response) ){
+	            //erreur
+	            $this->connection->rollback();
+	            return false;	            
+	        }
+	    }
+	    
+	    $this->connection->commit();
 		return true;
 	}
 
@@ -167,8 +209,19 @@ class Database {
 	 * @return boolean True si la sauvegarde a été réalisée avec succès, false sinon.
 	 */
 	private function saveResponse(&$response) {
-		/* TODO  */
-		return true;
+		//pr�paration de la requete d'insertion des r�ponses
+	    $surveyId = $response->getSurvey()->getId();
+	    $title = $this->connection->quote($response->getTitle());
+	    $query =  "insert into responses (id_survey, title, count) values ($surveyId, $title, 0) ";
+	    //insertion
+	    $stmt = $this->connection->query($query);
+	    
+	    if ($stmt !== false && $stmt->rowCount() == 1) {
+	       $response->setId($this->connection->lastInsertId());
+	       return true;
+	    } else {
+	       return false;
+	    }
 	}
 
 	/**
@@ -178,7 +231,13 @@ class Database {
 	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
 	 */
 	public function loadSurveysByOwner($owner) {
-		/* TODO  */
+	    $owner = $this->connection->quote(strtolower($owner));
+		$query =  "SELECT * FROM surveys where OWNER = $owner";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
 	}
 
 	/**
@@ -188,7 +247,14 @@ class Database {
 	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
 	 */
 	public function loadSurveysByKeyword($keyword) {
-		/* TODO  */
+	    
+	    $keyword = $this->connection->quote(strtolower($keyword));
+		$query =  "SELECT * FROM surveys WHERE INSTR(lower(question), $keyword)>0 ";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
 	}
 
 
@@ -199,7 +265,12 @@ class Database {
 	 * @return boolean True si le vote a été enregistré, false sinon.
 	 */
 	public function vote($id) {
-		/* TODO  */
+	    $query =  "UPDATE responses set count = count + 1 WHERE id = ? ";
+	    $stmt = $this->connection->prepare($query);
+	    $stmt->bindParam(1, $id, PDO::PARAM_INT);
+	    
+	    $result = $stmt->execute();
+	    return ($result && $stmt->rowCount() == 1 );
 	}
 
 	/**
@@ -211,7 +282,26 @@ class Database {
 	 */
 	private function loadSurveys($arraySurveys) {
 		$surveys = array();
-		/* TODO  */
+		
+		if(!is_array($arraySurveys)) return false;
+		
+		foreach ($arraySurveys as $row){
+		    //create survey from data in row
+		    $survey = new Survey($row['owner'], $row['question']);
+		    $survey->setId($row['id']);
+		    //get responses for this survey and add them to survey
+		    $query =  "SELECT * FROM responses WHERE id_survey = ? ";
+		    $stmt = $this->connection->prepare($query);
+		    $stmt->bindParam(1, $row['id'], PDO::PARAM_INT);
+		    $stmt->execute();
+		    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		    $stmt->closeCursor();
+		    
+		    $this->loadResponses($survey, $rows);
+		    //add this survey to this list of surveys
+		    $surveys[] = $survey;
+		}
+		
 		return $surveys;
 	}
 
@@ -223,7 +313,33 @@ class Database {
 	 * @return array(Response)|boolean Le tableau de réponses ou false si une erreur s'est produite.
 	 */
 	private function loadResponses(&$survey, $arrayResponses) {
-		/* TODO  */
+	    if(!is_array($arrayResponses)) return false;
+	    
+	    foreach($arrayResponses as $row){
+	        //create response from data in row
+	        $response = new Response($survey, $row['title'], $row['count']);
+	        $response->setId($row['id']);
+	        //add response to this survey
+	        $responses[] = $response;
+	        $survey->addResponse($response);
+	    }
+	    $survey->computePercentages();
+	    return $responses;
+	}
+	
+	/**
+	 * Construit un tableau de $nb de surveys
+	 * 
+	 * @param int $nb Nombre de surveys voulus
+	 * @return array(Survey)|boolean Sondages trouvés par la fonction ou false si une erreur s'est produite.
+	 */
+	public function getRandomSurveys($nb){
+	    $query =  "SELECT * FROM surveys ORDER BY RANDOM() LIMIT $nb ";
+	    $stmt = $this->connection->query($query);
+	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+	    
+	    return $this->loadSurveys($rows);
 	}
 
 }

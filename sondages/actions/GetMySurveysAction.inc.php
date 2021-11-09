@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("models/SurveysModel.inc.php");
 require_once("actions/Action.inc.php");
@@ -6,7 +6,7 @@ require_once("actions/Action.inc.php");
 class GetMySurveysAction extends Action {
 
 	/**
-	 * Construit la liste des sondages de l'utilisateur dans un modÃ¨le
+	 * Construit la liste des sondages de l'utilisateur dans un modèle
 	 * de type "SurveysModel" et le dirige vers la vue "ServeysView" 
 	 * permettant d'afficher les sondages.
 	 *
@@ -17,11 +17,24 @@ class GetMySurveysAction extends Action {
 	public function run() {
 
 		if ($this->getSessionLogin()===null) {
-			$this->setMessageView("Vous devez Ãªtre authentifiÃ©.");
+			$this->setMessageView("Vous devez être authentifié.");
 			return;
 		}
 
-		/* TODO  */
+		$surveys = $this->database->loadSurveysByOwner($this->getSessionLogin());
+		
+		if ($surveys === false ){
+		  $model = new MessageModel();
+		  $model->setMessage("Une erreur s'est produite");
+		  
+		  $this->setView(getViewByName("Message"));
+		} else {
+		  $model = new SurveysModel();
+		  $model->setSurveys($surveys);
+		  $this->setView(getViewByName('Surveys'));
+		}
+		$model->setLogin($this->getSessionLogin());
+		$this->setModel($model);
 	}
 
 }
