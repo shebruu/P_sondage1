@@ -20,25 +20,26 @@ class SearchAction extends Action {
 	    $keyword = isset($_POST['keyword']) ? $_POST['keyword'] : '';
 	    
 	    if (empty($keyword)){
-	        $model = new MessageModel();
-	        $model->setMessage('Vous devez entrer un mot clé avant de lancer la recherche.');  
+	        $this->setModel(new MessageModel());
+	        $this->getModel()->setMessage('Vous devez entrer un mot clé avant de lancer la recherche.');
+	        $this->getModel()->setLogin($this->getSessionLogin());
 	        $this->setView(getViewByName('Message'));
 	        return;
 	    }
 	    
 	    //récupérer les sondages dont la question contient le mot clé
 	    $surveys = $this->database->loadSurveysByKeyword($keyword);
-	    if ($surveys ===false){
-	        $model = new MessageModel();
-	        $model->setMessage('Erreur dans la recherche');
+	    if ($surveys === false){
+	        $this->setModel(new MessageModel());
+	        $this->getModel->setMessage('Erreur dans la recherche');
+	        $this->getModel()->setLogin($this->getSessionLogin());
 	        $this->setView(getViewByName('Message'));
 	        return;
 	    }
 	    
-	    $model = new SurveysModel();
-	    $model->setSurveys($surveys);
-	    $model->setLogin($this->getSessionLogin());
-	    $this->setModel($model);
+	    $this->setModel(new SurveysModel());
+	    $this->getModel()->setSurveys($surveys);
+	    $this->getModel()->setLogin($this->getSessionLogin());
 	    $this->setView(getViewByName('Surveys'));
 	}
 

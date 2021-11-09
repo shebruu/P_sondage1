@@ -234,6 +234,9 @@ class Database {
 	    $owner = $this->connection->quote(strtolower($owner));
 		$query =  "SELECT * FROM surveys where OWNER = $owner";
 	    $stmt = $this->connection->query($query);
+	    if ($stmt === false ){
+	        return false;
+	    }
 	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 	    
@@ -251,6 +254,9 @@ class Database {
 	    $keyword = $this->connection->quote(strtolower($keyword));
 		$query =  "SELECT * FROM surveys WHERE INSTR(lower(question), $keyword)>0 ";
 	    $stmt = $this->connection->query($query);
+	    if ($stmt === false ){
+	        return false;
+	    }
 	    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 	    
